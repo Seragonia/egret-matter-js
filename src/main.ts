@@ -49,10 +49,10 @@ export default class Main extends egret.DisplayObjectContainer {
         this._egretRender.rectangle(750 / 2, 200, 110, 110, boxADisplay);
 
         var boxBDisplay = getRectangeBitmap(texture[0], 80);
-        this._egretRender.rectangle(550, 50, 80, 80, boxBDisplay);
+        this._egretRender.rectangle(450, 50, 80, 80, boxBDisplay);
 
         var boxCDisplay = getCircleBitmap(texture[1], 110 / 2)
-        this._egretRender.circle(750 / 2 - 10, 100, 110 / 2, boxCDisplay);
+        this._egretRender.circle(750 / 2 - 60, 100, 110 / 2, boxCDisplay);
 
         const shape = new egret.Shape();
         shape.graphics.beginFill(0x00ff00, 1);
