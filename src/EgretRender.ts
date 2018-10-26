@@ -1,4 +1,4 @@
-import getRotation from "./getRotation";
+import getRotation from "./utils/getRotation";
 
 export default class EgretRender {
     private _root: egret.DisplayObjectContainer;

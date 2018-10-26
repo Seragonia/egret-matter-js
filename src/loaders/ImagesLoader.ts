@@ -1,3 +1,6 @@
+/**
+ * 多资源并行加载。抛弃重的egret RES管理系统。
+ */
 export default class ImagesLoader extends egret.EventDispatcher {
     private _urls: string[];
     private _textureHash: { [key: string]: egret.Texture };

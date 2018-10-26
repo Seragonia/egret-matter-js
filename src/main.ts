@@ -21,24 +21,30 @@ export default class Main extends egret.DisplayObjectContainer {
             this._lastTimestamp = 0;
             egret.ticker.resume(); // 打开渲染与心跳
         }
+
+        //资源预先加载
         const loader = new ImagesLoader();
         loader.load(['resource/asset/rect.png', 'resource/asset/circle.png']);
         loader.once(egret.Event.COMPLETE, this.onImageLoad, this);
     }
 
+    //资源加载完成
     onImageLoad(e: egret.Event) {
         this.runGame(e.data as egret.Texture[]);
     }
 
+    //开始游戏
     runGame(texture: egret.Texture[]) {
-        // create an engine
+        //创建引擎
         const engine = Matter.Engine.create();
         this._engine = engine;
+
+        //创建egret渲染
         const egretRenderContainer = new egret.Sprite();
         this.addChild(egretRenderContainer);
         this._egretRender = new EgretRender(egretRenderContainer, this._engine);
 
-        // create two boxes and a ground
+        //创建刚体
         var boxADisplay = getRectangeBitmap(texture[0], 110);
         this._egretRender.rectangle(750 / 2, 200, 110, 110, boxADisplay);
 
@@ -56,6 +62,7 @@ export default class Main extends egret.DisplayObjectContainer {
         shape.anchorOffsetY=60/2;
         this._egretRender.rectangle(750 / 2, 1000, 750, 60, shape, { isStatic: true });
 
+        //开启debug渲染
         this._debugRender = new DebugRender(this._engine);
         this.addChild(this._debugRender);
 
