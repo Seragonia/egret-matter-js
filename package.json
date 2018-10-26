@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "start": "webpack-dev-server  --config webpack.config.js"
+    "start": "webpack-dev-server  --config webpack.config.js",
+    "build":"webpack --config webpack.config.js"
   },
   "devDependencies": {
     "ts-loader": "^5.2.2",
