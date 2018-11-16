@@ -1,4 +1,5 @@
 import getRotation from "./utils/getRotation";
+import MovieClip from "./movieclip/MovieClip";
 
 export default class EgretRender {
     private _root: egret.DisplayObjectContainer;
@@ -22,6 +23,18 @@ export default class EgretRender {
             const body = bodies[i];
             const display = body['display'] as egret.DisplayObject;
             if (!display) continue;
+
+            // 贴图与刚体位置的小数点后几位有点不一样，需要降低精度
+            const x1 = Math.round(display.x)
+            const x2 = Math.round(body.position.x)
+            const y1 = Math.round(display.y)
+            const y2 = Math.round(body.position.y)
+
+            if (x1 !== x2 || y1 !== y2) {
+                if (display instanceof MovieClip) display.resume();
+            } else {
+                if (display instanceof MovieClip) display.pause();
+            }
             display.x = body.position.x;
             display.y = body.position.y;
             display.rotation = getRotation(body.angle);
@@ -36,7 +49,7 @@ export default class EgretRender {
     }
 
     circle(x: number, y: number, radius: number, display: egret.DisplayObject, options?: Matter.IChamferableBodyDefinition) {
-        const body = this.circleToRender(x, y, radius, display);
+        const body = this.circleToRender(x, y, radius, display, options);
         this.addBodyToWorld(body);
         return body;
     }
