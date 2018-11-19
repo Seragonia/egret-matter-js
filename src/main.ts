@@ -18,12 +18,12 @@ export default class Main extends egret.DisplayObjectContainer {
     onAddToStage(event) {
         egret.lifecycle.onPause = () => {
             console.log("app 进入后台");
-            // egret.ticker.pause(); // 关闭渲染与心跳
+            egret.ticker.pause(); // 关闭渲染与心跳
         }
         egret.lifecycle.onResume = () => {
             console.log("app 进入前台");
-            // this._lastTimestamp = 0;
-            // egret.ticker.resume(); // 打开渲染与心跳
+            this._lastTimestamp = 0;
+            egret.ticker.resume(); // 打开渲染与心跳
         }
 
         //资源预先加载
@@ -80,7 +80,24 @@ export default class Main extends egret.DisplayObjectContainer {
         shape.graphics.endFill();
         shape.anchorOffsetX = 750 / 2;
         shape.anchorOffsetY = 60 / 2;
+
+        const shape2 = new egret.Shape();
+        shape2.graphics.beginFill(0x00ff00, 1);
+        shape2.graphics.drawRect(0, 0, 60, 1624);
+        shape2.graphics.endFill();
+        shape2.anchorOffsetX = 60 / 2;
+        shape2.anchorOffsetY = 1624 / 2;
+
+        const shape3 = new egret.Shape();
+        shape3.graphics.beginFill(0x00ff00, 1);
+        shape3.graphics.drawRect(0, 0, 60, 1624);
+        shape3.graphics.endFill();
+        shape3.anchorOffsetX = 60 / 2;
+        shape3.anchorOffsetY = 1624 / 2;
+
         this._egretRender.rectangle(750 / 2, 1000, 750, 60, shape, { isStatic: true });
+        this._egretRender.rectangle(0, 1624 / 2, 60, 1624, shape2, { isStatic: true });
+        this._egretRender.rectangle(750, 1624 / 2, 60, 1624, shape3, { isStatic: true });
 
         //开启debug渲染
         this._debugRender = new DebugRender(this._engine);
@@ -88,18 +105,15 @@ export default class Main extends egret.DisplayObjectContainer {
 
         let count = 0;
         let coinsFall = setInterval(() => {
-            if (count < 10) {
-                const x = 750 / 2 + Math.random() * 50 - 25;
-                const y = 750 / 2 + Math.random() * 50 - 25;
-                const vx = Math.random() * 20 - 10;
-                const vy = -10 + Math.random() * 10 - 5;
+            if (count < 40) {
+
                 // const s = Math.random() > 0.5 ? spritesheet : spritesheet_yellow;
                 // const animation = this.createMovieClip(s);
                 const animation = this.createBoxMovieClip(boxTexture);
                 this.addChild(animation);
 
-                this._egretRender.circle(750 / 2, 750, 80 / 2, animation,
-                    { frictionAir: 0.02, restitution: 0.15 });
+                this._egretRender.circle(750 / 2, 100, 80 / 2, animation,
+                    { frictionAir: 0.02, restitution: .15 });
                 count++;
             } else {
                 //结束
@@ -179,10 +193,12 @@ export default class Main extends egret.DisplayObjectContainer {
             this._lastTimestamp = timestamp;
             return;
         }
-        const delta = timestamp - this._lastTimestamp;
+        let delta = timestamp - this._lastTimestamp;
+        // if (delta > 20)
+        //     delta = 20;
         this._lastTimestamp = timestamp;
         Matter.Engine.update(this._engine, delta);
-
+        console.log(delta);
         this._debugRender.run();
         this._egretRender.run();
         return false;

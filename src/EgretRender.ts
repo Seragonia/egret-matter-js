@@ -29,8 +29,10 @@ export default class EgretRender {
             const x2 = Math.round(body.position.x)
             const y1 = Math.round(display.y)
             const y2 = Math.round(body.position.y)
-
-            if (x1 !== x2 || y1 !== y2) {
+            const distanceX = Math.abs(x1 - x2);
+            const distanceY = Math.abs(y1 - y2);
+            const precision = 0;//精度
+            if (distanceX > precision || distanceY > precision) {
                 if (display instanceof MovieClip) display.resume();
             } else {
                 if (display instanceof MovieClip) display.pause();
