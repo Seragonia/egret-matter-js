@@ -241,7 +241,8 @@ export default class Main extends egret.DisplayObjectContainer {
                         mass: 1,
                         force: { x: Math.random() * .05 - .025, y: -0.05 * scale },
                         frictionAir: 0.02, restitution: .15, collisionFilter: { group: bubbleGroup, category: bubble, mask: bubbleMask }
-                    },4);
+                    }, 4);
+                    //todo 视图层气泡从小到大
                     setTimeout(() => {
                         Matter.World.remove(this._engine.world, body);
                     }, 1000);
@@ -319,7 +320,7 @@ export default class Main extends egret.DisplayObjectContainer {
         this._lastTimestamp = timestamp;
         Matter.Engine.update(this._engine, delta);
         // console.log(delta);
-        this._debugRender.run();
+        // this._debugRender.run();
         this._egretRender.run();
         return false;
     }
