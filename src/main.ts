@@ -237,7 +237,7 @@ export default class Main extends egret.DisplayObjectContainer {
             const scale = 1.2;
             for (let i = 0; i < 10; i++) {
                 setTimeout(() => {
-                    const body = Matter.Bodies.circle(this.stageX, 950 + 50, 10, {
+                    const body = Matter.Bodies.circle(this.stageX, 950 + 50, Math.random()*8 + 3, {
                         mass: 1,
                         force: { x: Math.random() * .05 - .025, y: -0.05 * scale },
                         frictionAir: 0.02, restitution: .15, collisionFilter: { group: bubbleGroup, category: bubble, mask: bubbleMask }
