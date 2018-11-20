@@ -1,9 +1,9 @@
 import DebugRender from "./DebugRender";
 import EgretRender from "./EgretRender";
 import ImagesLoader from "./loaders/ImagesLoader";
-import loadSpriteSheet from "./loaders/loadSpriteSheet";
-import loadRingSpritesheet from "./loadRingSpritesheet";
-import MovieClip from "./movieclip/MovieClip";
+import getAngle from "./utils/getAngle";
+import getRotation from "./utils/getRotation";
+const { Body, Bodies, World, Constraint } = Matter;
 export default class Main extends egret.DisplayObjectContainer {
     private _engine: Matter.Engine;
     private _debugRender: DebugRender;
@@ -39,109 +39,11 @@ export default class Main extends egret.DisplayObjectContainer {
         this.runGame(e.data as egret.Texture[]);
     }
 
-    deviceorientationCb(t) {
-        var e = t.gamma;
-        e < -70 && (e = -70);
-        e > 70 && (e = 70);
-        // console.log(e / 70 )
-
-        this._engine.world.gravity.x = e / 70 * .8;
-        let f = t.beta;
-        f < -70 && (f = -70);
-        f > 70 && (f = 70);
-        if (f < -20) {
-            console.log(f / 70 * .4)
-            this._engine.world.gravity.y = f / 70 * .4;
-        } else {
-            this._engine.world.gravity.y = .4;
-        }
-    }
-
-    addForce = false;
-    stageX = 0;
-
-    // 首先，定义一个摇动的阀值
-    SHAKE_THRESHOLD = 3000;
-    // 定义一个变量保存上次更新的时间
-    last_update = 0;
-    // 紧接着定义x、y、z记录三个轴的数据以及上一次出发的时间
-    __x;
-    __y;
-    __z;
-    last_x;
-    last_y;
-    last_z;
-    tag = 0;
-    deviceMotionHandler(eventData) {
-        // 获取含重力的加速度
-        var acceleration = eventData.accelerationIncludingGravity;
-
-        // 获取当前时间
-        var curTime = new Date().getTime();
-        var diffTime = curTime - this.last_update;
-        // 固定时间段
-        if (diffTime > 100) {
-            this.last_update = curTime;
-
-            this.__x = acceleration.x;
-            this.__y = acceleration.y;
-            this.__z = acceleration.z;
-
-            var speed = Math.abs(this.__x + this.__y + this.__z - this.last_x - this.last_y - this.last_z) / diffTime * 10000;
-
-            if (speed > this.SHAKE_THRESHOLD) {
-                // TODO:在此处可以实现摇一摇之后所要进行的数据逻辑操作
-                if (this.tag == 0) {
-                    this.tag = 1;
-                    console.log('摇一摇了');
-                    const bodies = Matter.Composite.allBodies(this._engine.world);
-                    bodies.forEach(body => {
-                        const display = body['display'] as egret.DisplayObject;
-                        if (!display) return;
-                        const stren = .5;
-                        const dir = Math.random() * 2 - 1;
-                        Matter.Body.applyForce(body, { x: body.position.x, y: body.position.y }, { x: stren * dir, y: stren * dir });
-                    });
-                    setTimeout(() => {
-                        this.tag = 0;
-
-                    }, 1000);
-                }
-
-            }
-
-            this.last_x = this.__x;
-            this.last_y = this.__y;
-            this.last_z = this.__z;
-        }
-    }
-
-
     //开始游戏
     async runGame(texture: egret.Texture[]) {
-
-        if (window['DeviceMotionEvent']) {
-            // 移动浏览器支持运动传感事件
-            window.addEventListener('devicemotion', this.deviceMotionHandler.bind(this), false);
-        } else {
-            // 移动浏览器不支持运动传感事件
-        }
-
-        if (window['DeviceOrientationEvent']) {
-            window.addEventListener('deviceorientation', this.deviceorientationCb.bind(this), false);
-        } else { document.querySelector('body').innerHTML = '你的瀏覽器不支援喔'; }
-
-        const keys = ['resource/asset/box.json', 'resource/asset/box.png'];
-        const boxTexture = await loadSpriteSheet(keys);
-        const ringTextures = texture[2];
-        const ringTextures_yellow = texture[3];
-        const spritesheet = loadRingSpritesheet(ringTextures);
-        const spritesheet_yellow = loadRingSpritesheet(ringTextures_yellow);
-
         //创建引擎
         const engine = Matter.Engine.create();
         this._engine = engine;
-        this._engine.world.gravity.y = 0.4;
 
         //创建egret渲染
         const egretRenderContainer = new egret.Sprite();
@@ -178,15 +80,9 @@ export default class Main extends egret.DisplayObjectContainer {
         shape3.anchorOffsetY = 1624 / 2;
 
         const wall = 1;
-        const basket = 2;
-        const award = 4;
-        const bubble = 8;
-        const bubbleGroup = -1;
-
-        const wallMask = award + bubble;
-        const basketMask = award + bubble;
-        const awardMask = wall + basket + bubble;
-        const bubbleMask = wall + basket + award;
+        const noname = 2;
+        const wallMask = noname;
+        const nonameMask = wall;
 
         this._egretRender.rectangle(750 / 2, 1000, 750, 60, shape, { isStatic: true, collisionFilter: { group: wall, category: wall, mask: wallMask } });
         this._egretRender.rectangle(750 / 2, 50, 750, 60, shape4, { isStatic: true, collisionFilter: { group: wall, category: wall, mask: wallMask } });
@@ -194,35 +90,16 @@ export default class Main extends egret.DisplayObjectContainer {
         this._egretRender.rectangle(750, 1624 / 2, 60, 1624, shape3, { isStatic: true, collisionFilter: { group: wall, category: wall, mask: wallMask } });
 
         // create a renderer
-        const options: any = {
-            width: 750,
-            height: 1624,
-            wireframes: !1,
-        };
-
         const render = Matter.Render.create({
             element: document.getElementById('debugCanvas'),
             engine: engine,
-            options: options
+            options: {
+                width: 750,
+                height: 1624,
+                wireframes: !1,
+            }
         });
         Matter.Render.run(render);
-
-        const horseShoe = Matter.Vertices.fromPath('0 0 1 0 10 90 190 90 199 0 200 0 200 100 0 100', null);
-        const body = Matter.Bodies.fromVertices(750 / 2, 700, [horseShoe], { isStatic: true, collisionFilter: { group: basket, category: basket, mask: basketMask } }, true);
-        Matter.World.add(this._engine.world, body);
-
-        let count = 0;
-        let coinsFall = setInterval(() => {
-            if (count < 20) {
-                const animation = this.createBoxMovieClip(boxTexture);
-                this.addChild(animation);
-                this._egretRender.circle(750 / 2, 800, 80 / 2, animation,
-                    { frictionAir: 0.02, restitution: .15, collisionFilter: { group: award, category: award, mask: awardMask } });
-                count++;
-            } else {
-                //结束
-            }
-        }, 10);
 
         // run the engine
         this.runEngine();
@@ -231,77 +108,65 @@ export default class Main extends egret.DisplayObjectContainer {
         this._debugRender = new DebugRender(this._engine);
         this.addChild(this._debugRender);
 
-        Matter.Events.on(this._engine, 'beforeUpdate', () => {
-            if (!this.addForce) return
-            this.addForce = false;
-            const scale = 1.2;
-            for (let i = 0; i < 10; i++) {
-                setTimeout(() => {
-                    const body = Matter.Bodies.circle(this.stageX, 950 + 50, Math.random()*8 + 3, {
-                        mass: 1,
-                        force: { x: Math.random() * .05 - .025, y: -0.05 * scale },
-                        frictionAir: 0.02, restitution: .15, collisionFilter: { group: bubbleGroup, category: bubble, mask: bubbleMask }
-                    }, 4);
-                    //todo 视图层气泡从小到大
-                    setTimeout(() => {
-                        Matter.World.remove(this._engine.world, body);
-                    }, 1000);
-                    Matter.World.add(this._engine.world, body);
-                }, Math.random() * 200);
-            }
 
-            // const bodies = Matter.Composite.allBodies(this._engine.world);
-            // bodies.forEach(body => {
-            //     const display = body['display'] as egret.DisplayObject;
-            //     if (!display) return;
-            //     const range = 300;
-            //     if (body.position.x > (375 - range) && body.position.x < (375 + range) && body.position.y > 800) {
-            //         const dir = body.position.x > 350 ? 1 : -1;
-            //         const scale = 10;
-            //         Matter.Body.applyForce(body, { x: body.position.x, y: body.position.y }, { x: 0.08 * dir, y: -0.05 * scale });
-            //     }
-            // });
-            console.log('吹起来');
+
+        // Create a cross-shaped compound body that is composed of two rectangle bodies joined together
+        const seesaw = Bodies.rectangle(375, 700, 400, 10, {
+            isStatic: true,
+            friction: 0,
+            collisionFilter: { group: noname, category: noname, mask: nonameMask },
         });
 
-        this.stage.addEventListener(egret.TouchEvent.TOUCH_TAP, (e: egret.TouchEvent) => {
-            this.addForce = true;
-            this.stageX = e.stageX;
+        let touchLeft = false;
+        let touchRight = false;
+        let angle = 0;
+        egret.startTick(() => {
+            if (touchLeft)
+                angle += getAngle(-1);
+            if (touchRight)
+                angle += getAngle(1);
+            let rotation = getRotation(angle);
+            if (rotation > 30) {
+                rotation = 30;
+            }
+            if (rotation < -30) {
+                rotation = -30;
+            }
+            Body.setAngle(seesaw, getAngle(rotation));
+            return false;
+        }, this);
+        this.stage.addEventListener(egret.TouchEvent.TOUCH_BEGIN, (e: egret.TouchEvent) => {
+            touchLeft = e.stageX < 375;
+            touchRight = !touchLeft;
+        }, this);
+        this.stage.addEventListener(egret.TouchEvent.TOUCH_END, (e: egret.TouchEvent) => {
+            touchLeft = false;
+            touchRight = false;
         }, this);
 
-    }
-
-    createMovieClip(spritesheet) {
-        const movieclip = new MovieClip({
-            spritesheet: spritesheet,
-            frameInterval: 4,
-            frames: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'],
-            position: [100, 100]
+        const rectangle = Bodies.circle(375 + 150, 200, 20, {
+            isStatic: false,
+            friction: 0,
+            restitution: .5,
+            collisionFilter: { group: noname, category: noname, mask: nonameMask }
         });
-        return movieclip
-    }
 
-    createBoxMovieClip(spritesheet) {
-        const list = this.fill(1, 20);
-        const movieclip = new MovieClip({
-            spritesheet: spritesheet,
-            frameInterval: 3,
-            frames: list,
-            position: [750 / 2, 750 / 2],
-            scale: 0.2
-        });
-        return movieclip
-    }
+        //钉子约束
+        const nailConstraint = Constraint.create({
+            pointA: {
+                x: 375,
+                y: 700
+            },
+            bodyB: seesaw,
+            pointB: {
+                x: 0,
+                y: 0
+            },
+            stiffness: 1
+        })
 
-    fill(start, end) {
-        const list = [];
-        for (let i = start; i <= end; i++) {
-            let str = i + '';
-            if (i < 10)
-                str = `0${i}`;
-            list.push(str);
-        }
-        return list;
+        World.add(this._engine.world, [seesaw, rectangle]);
+        World.add(this._engine.world, nailConstraint);
     }
 
     runEngine() {
