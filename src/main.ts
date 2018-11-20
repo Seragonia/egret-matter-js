@@ -227,6 +227,10 @@ export default class Main extends egret.DisplayObjectContainer {
         // run the engine
         this.runEngine();
 
+        //开启debug渲染
+        this._debugRender = new DebugRender(this._engine);
+        this.addChild(this._debugRender);
+
         Matter.Events.on(this._engine, 'beforeUpdate', () => {
             if (!this.addForce) return
             this.addForce = false;
@@ -315,7 +319,7 @@ export default class Main extends egret.DisplayObjectContainer {
         this._lastTimestamp = timestamp;
         Matter.Engine.update(this._engine, delta);
         // console.log(delta);
-        // this._debugRender.run();
+        this._debugRender.run();
         this._egretRender.run();
         return false;
     }
