@@ -81,8 +81,10 @@ export default class Main extends egret.DisplayObjectContainer {
 
         const wall = 1;
         const noname = 2;
+        const basket = 2;
         const wallMask = noname;
-        const nonameMask = wall;
+        const nonameMask = wall + basket;
+        const basketMask = noname;
 
         this._egretRender.rectangle(750 / 2, 1000, 750, 60, shape, { isStatic: true, collisionFilter: { group: wall, category: wall, mask: wallMask } });
         this._egretRender.rectangle(750 / 2, 50, 750, 60, shape4, { isStatic: true, collisionFilter: { group: wall, category: wall, mask: wallMask } });
@@ -108,14 +110,19 @@ export default class Main extends egret.DisplayObjectContainer {
         this._debugRender = new DebugRender(this._engine);
         this.addChild(this._debugRender);
 
-
-
         // Create a cross-shaped compound body that is composed of two rectangle bodies joined together
         const seesaw = Bodies.rectangle(375, 700, 400, 10, {
             isStatic: true,
             friction: 0,
             collisionFilter: { group: noname, category: noname, mask: nonameMask },
         });
+
+        const basketPath = Matter.Vertices.fromPath('0 0 1 0 10 90 190 90 199 0 200 0 200 100 0 100', null);
+        const basketBody = Matter.Bodies.fromVertices(150, 900, [basketPath], { isStatic: true, collisionFilter: { group: basket, category: basket, mask: basketMask } }, true);
+        Matter.World.add(this._engine.world, basketBody);
+
+        const rightBasketBody = Matter.Bodies.fromVertices(600, 900, [basketPath], { isStatic: true, collisionFilter: { group: basket, category: basket, mask: basketMask } }, true);
+        Matter.World.add(this._engine.world, rightBasketBody);
 
         let touchLeft = false;
         let touchRight = false;
@@ -144,12 +151,29 @@ export default class Main extends egret.DisplayObjectContainer {
             touchRight = false;
         }, this);
 
-        const rectangle = Bodies.circle(375 + 150, 200, 20, {
-            isStatic: false,
-            friction: 0,
-            restitution: .5,
-            collisionFilter: { group: noname, category: noname, mask: nonameMask }
-        });
+        const startY = 550;
+        const leftStart = { x: 0, y: startY, forceX: 0.010 };
+        const rightStart = { x: 750 , y: startY, forceX: -0.010 };
+        setInterval(() => {
+            const start = Math.random() > 0.5 ? leftStart : rightStart;
+            const fallingCircle = Bodies.circle(start.x, start.y, 10 + Math.random() * 5, {
+                isStatic: false,
+                force: { x: start.forceX, y: 0 },
+                friction: 0,
+                restitution: 1,
+                collisionFilter: { group: noname, category: noname, mask: nonameMask }
+            });
+
+            const fallingRect = Bodies.rectangle(start.x, start.y, 50,20, {
+                isStatic: false,
+                force: { x: start.forceX, y: 0 },
+                friction: .5,
+                restitution: .5,
+                collisionFilter: { group: noname, category: noname, mask: nonameMask }
+            });
+            Math.random() > 0.2 ? (World.add(this._engine.world, fallingCircle)) : (World.add(this._engine.world, fallingRect));
+            
+        }, 1000);
 
         //钉子约束
         const nailConstraint = Constraint.create({
@@ -165,7 +189,7 @@ export default class Main extends egret.DisplayObjectContainer {
             stiffness: 1
         })
 
-        World.add(this._engine.world, [seesaw, rectangle]);
+        World.add(this._engine.world, seesaw);
         World.add(this._engine.world, nailConstraint);
     }
 
