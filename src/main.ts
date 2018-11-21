@@ -133,7 +133,9 @@ export default class Main extends egret.DisplayObjectContainer {
         } else { document.querySelector('body').innerHTML = '你的瀏覽器不支援喔'; }
 
         const keys = ['resource/asset/box.json', 'resource/asset/box.png'];
+        const keysBoom = ['resource/asset/boom.json', 'resource/asset/boom.png'];
         const boxTexture = await loadSpriteSheet(keys);
+        const boomTexture = await loadSpriteSheet(keysBoom);
         const ringTextures = texture[2];
         const ringTextures_yellow = texture[3];
         const spritesheet = loadRingSpritesheet(ringTextures);
@@ -217,10 +219,11 @@ export default class Main extends egret.DisplayObjectContainer {
 
         let count = 0;
         let coinsFall = setInterval(() => {
-            if (count < 15) {
-                const animation = this.createBoxMovieClip(boxTexture);
+            if (count < 20) {
+                const animation = this.createBoomMovieClip(boomTexture);
+                // const animation = this.createBoxMovieClip(boxTexture);
                 this.addChild(animation);
-                this._egretRender.circle(375 + Math.random() * 200 - 100, 800, 80 / 2, animation,
+                this._egretRender.circle(375 + Math.random() * 200 - 100, 800, 215 / 2/2.5, animation,
                     {
                         collisionFilter: { group: award, category: award, mask: awardMask }
                     });
@@ -234,7 +237,7 @@ export default class Main extends egret.DisplayObjectContainer {
         setInterval(() => {
             const scale = .5;
             const scaleX = .1;
-            const x0 = Math.random() > .5 ? (120):(750-120);
+            const x0 = Math.random() > .5 ? (120) : (750 - 120);
             for (let i = 0; i < 10; i++) {
                 setTimeout(() => {
                     const body = Matter.Bodies.circle(x0, 950, Math.random() * 3 + 6, {
@@ -291,7 +294,7 @@ export default class Main extends egret.DisplayObjectContainer {
             spritesheet: spritesheet,
             frameInterval: 4,
             frames: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'],
-            position: [100, 100]
+            position: [100, 100], anchor: .5
         });
         return movieclip
     }
@@ -303,7 +306,20 @@ export default class Main extends egret.DisplayObjectContainer {
             frameInterval: 3,
             frames: list,
             position: [750 / 2, 750 / 2],
-            scale: 0.2
+            scale: 0.2, anchor: .5
+        });
+        return movieclip
+    }
+
+    createBoomMovieClip(spritesheet) {
+        const list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];
+        const movieclip = new MovieClip({
+            spritesheet: spritesheet,
+            frameInterval: 60/30,
+            frames: list,
+            position: [750 / 2, 750 / 2],
+            scale: .3,
+            anchor: [.505,.268]
         });
         return movieclip
     }

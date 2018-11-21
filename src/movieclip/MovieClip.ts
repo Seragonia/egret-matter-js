@@ -4,20 +4,26 @@ export default class MovieClip extends egret.Bitmap {
     keys: string[];
     autoplay: boolean;
     loop: boolean;
-    anchor: number;
+    anchorX: number;
+    anchorY: number;
     currentFrame: number;
     frameInterval: number;
     counter: number;
     scale: number;
 
-    constructor({ spritesheet, frames, position, keys = null, autoplay = true, scale = 1, loop = true, anchor = .5, frameInterval = 1 }) {
+    constructor({ spritesheet, frames, position, keys = null, autoplay = true, scale = 1, loop = true, anchor, frameInterval = 1 }) {
         super();
         this.frames = frames;
         this.frameInterval = frameInterval;
         this.keys = keys;
         this.autoplay = autoplay;
         this.loop = loop;
-        this.anchor = anchor;
+        this.anchorX = anchor;
+        this.anchorY = anchor;
+        if (Array.isArray(anchor)) {
+            this.anchorX = anchor[0];
+            this.anchorY = anchor[1];
+        }
         this.scale = scale;
         this.x = position[0];
         this.y = position[1];
@@ -70,8 +76,8 @@ export default class MovieClip extends egret.Bitmap {
 
     set spritesheet(value: egret.SpriteSheet) {
         this.textures = this.frames.map(frame => value.getTexture(frame));
-        this.anchorOffsetX = this.textures[0].textureWidth * this.anchor;
-        this.anchorOffsetY = this.textures[1].textureWidth * this.anchor;
+        this.anchorOffsetX = this.textures[0].textureWidth * this.anchorX;
+        this.anchorOffsetY = this.textures[1].textureWidth * this.anchorY;
         this.scaleY = this.scale;
         this.scaleX = this.scale;
     }
