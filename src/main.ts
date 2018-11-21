@@ -4,6 +4,7 @@ import ImagesLoader from "./loaders/ImagesLoader";
 import loadSpriteSheet from "./loaders/loadSpriteSheet";
 import loadRingSpritesheet from "./loadRingSpritesheet";
 import MovieClip from "./movieclip/MovieClip";
+const { Body } = Matter;
 export default class Main extends egret.DisplayObjectContainer {
     private _engine: Matter.Engine;
     private _debugRender: DebugRender;
@@ -141,7 +142,7 @@ export default class Main extends egret.DisplayObjectContainer {
         //创建引擎
         const engine = Matter.Engine.create();
         this._engine = engine;
-        this._engine.world.gravity.y = 0.4;
+        this._engine.world.gravity.y = 0.2;
 
         //创建egret渲染
         const egretRenderContainer = new egret.Sprite();
@@ -181,12 +182,15 @@ export default class Main extends egret.DisplayObjectContainer {
         const basket = 2;
         const award = 4;
         const bubble = 8;
+        const bubbleStandby = 16;
         const bubbleGroup = -1;
+        const bubbleStandbyGroup = -2;
 
-        const wallMask = award + bubble;
-        const basketMask = award + bubble;
+        const wallMask = award + bubble + bubbleStandby;
+        const basketMask = award + bubble + bubbleStandby;
         const awardMask = wall + basket + bubble;
         const bubbleMask = wall + basket + award;
+        const bubbleStandbyMask = wall + basket;
 
         this._egretRender.rectangle(750 / 2, 1000, 750, 60, shape, { isStatic: true, collisionFilter: { group: wall, category: wall, mask: wallMask } });
         this._egretRender.rectangle(750 / 2, 50, 750, 60, shape4, { isStatic: true, collisionFilter: { group: wall, category: wall, mask: wallMask } });
@@ -208,21 +212,44 @@ export default class Main extends egret.DisplayObjectContainer {
         Matter.Render.run(render);
 
         const horseShoe = Matter.Vertices.fromPath('0 0 1 0 10 90 190 90 199 0 200 0 200 100 0 100', null);
-        const body = Matter.Bodies.fromVertices(750 / 2, 700, [horseShoe], { isStatic: true, collisionFilter: { group: basket, category: basket, mask: basketMask } }, true);
+        const body = Matter.Bodies.fromVertices(750 / 2, 400, [horseShoe], { isStatic: true, collisionFilter: { group: basket, category: basket, mask: basketMask } }, true);
         Matter.World.add(this._engine.world, body);
 
         let count = 0;
         let coinsFall = setInterval(() => {
-            if (count < 20) {
+            if (count < 15) {
                 const animation = this.createBoxMovieClip(boxTexture);
                 this.addChild(animation);
-                this._egretRender.circle(750 / 2, 800, 80 / 2, animation,
-                    { frictionAir: 0.02, restitution: .15, collisionFilter: { group: award, category: award, mask: awardMask } });
+                this._egretRender.circle(375 + Math.random() * 200 - 100, 800, 80 / 2, animation,
+                    {
+                        collisionFilter: { group: award, category: award, mask: awardMask }
+                    });
                 count++;
             } else {
                 //结束
             }
         }, 10);
+
+
+        setInterval(() => {
+            const scale = .5;
+            const scaleX = .1;
+            const x0 = Math.random() > .5 ? (120):(750-120);
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const body = Matter.Bodies.circle(x0, 950, Math.random() * 3 + 6, {
+                        restitution: 0,
+                        force: { x: (Math.random() * .02 - .01) * scaleX, y: -0.02 * scale },
+                        collisionFilter: { group: bubbleStandbyGroup, category: bubbleStandby, mask: bubbleStandbyMask }
+                    }, 4);
+                    setTimeout(() => {
+                        Matter.World.remove(this._engine.world, body);
+                    }, 800);
+                    Matter.World.add(this._engine.world, body);
+                }, i * 50);
+            }
+            console.log('自动吹')
+        }, 2000);
 
         // run the engine
         this.runEngine();
@@ -234,33 +261,21 @@ export default class Main extends egret.DisplayObjectContainer {
         Matter.Events.on(this._engine, 'beforeUpdate', () => {
             if (!this.addForce) return
             this.addForce = false;
-            const scale = 1.2;
-            for (let i = 0; i < 10; i++) {
+            const scale = 1.7;
+            for (let i = 0; i < 20; i++) {
                 setTimeout(() => {
-                    const body = Matter.Bodies.circle(this.stageX, 950 + 50, Math.random()*8 + 3, {
-                        mass: 1,
-                        force: { x: Math.random() * .05 - .025, y: -0.05 * scale },
-                        frictionAir: 0.02, restitution: .15, collisionFilter: { group: bubbleGroup, category: bubble, mask: bubbleMask }
+                    const body = Matter.Bodies.circle(this.stageX, 950 + 50, Math.random() * 5 + 8, {
+                        density: 0.001 * 3,
+                        restitution: 1,
+                        force: { x: Math.random() * .02 - .01, y: -0.02 * scale },
+                        collisionFilter: { group: bubbleGroup, category: bubble, mask: bubbleMask }
                     }, 4);
-                    //todo 视图层气泡从小到大
                     setTimeout(() => {
                         Matter.World.remove(this._engine.world, body);
-                    }, 1000);
+                    }, 2000);
                     Matter.World.add(this._engine.world, body);
                 }, Math.random() * 200);
             }
-
-            // const bodies = Matter.Composite.allBodies(this._engine.world);
-            // bodies.forEach(body => {
-            //     const display = body['display'] as egret.DisplayObject;
-            //     if (!display) return;
-            //     const range = 300;
-            //     if (body.position.x > (375 - range) && body.position.x < (375 + range) && body.position.y > 800) {
-            //         const dir = body.position.x > 350 ? 1 : -1;
-            //         const scale = 10;
-            //         Matter.Body.applyForce(body, { x: body.position.x, y: body.position.y }, { x: 0.08 * dir, y: -0.05 * scale });
-            //     }
-            // });
             console.log('吹起来');
         });
 
