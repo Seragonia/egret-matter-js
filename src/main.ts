@@ -150,6 +150,7 @@ export default class Main extends egret.DisplayObjectContainer {
         const egretRenderContainer = new egret.Sprite();
         this.addChild(egretRenderContainer);
         this._egretRender = new EgretRender(egretRenderContainer, this._engine);
+        // this.addChild(this['glass'])
 
 
         const shape = new egret.Shape();
@@ -200,18 +201,18 @@ export default class Main extends egret.DisplayObjectContainer {
         this._egretRender.rectangle(750, 1624 / 2, 60, 1624, shape3, { isStatic: true, collisionFilter: { group: wall, category: wall, mask: wallMask } });
 
         // create a renderer
-        const options: any = {
-            width: 750,
-            height: 1624,
-            wireframes: !1,
-        };
+        // const options: any = {
+        //     width: 750,
+        //     height: 1624,
+        //     wireframes: !1,
+        // };
 
-        const render = Matter.Render.create({
-            element: document.getElementById('debugCanvas'),
-            engine: engine,
-            options: options
-        });
-        Matter.Render.run(render);
+        // const render = Matter.Render.create({
+        //     element: document.getElementById('debugCanvas'),
+        //     engine: engine,
+        //     options: options
+        // });
+        // Matter.Render.run(render);
 
         const horseShoe = Matter.Vertices.fromPath('0 0 1 0 10 90 190 90 199 0 200 0 200 100 0 100', null);
         const body = Matter.Bodies.fromVertices(750 / 2, 400, [horseShoe], { isStatic: true, collisionFilter: { group: basket, category: basket, mask: basketMask } }, true);
@@ -351,7 +352,7 @@ export default class Main extends egret.DisplayObjectContainer {
         this._lastTimestamp = timestamp;
         Matter.Engine.update(this._engine, delta);
         // console.log(delta);
-        // this._debugRender.run();
+        this._debugRender.run();
         this._egretRender.run();
         return false;
     }
